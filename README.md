@@ -29,3 +29,15 @@ Rule-based and English-centric; no URL/sender reputation lookups; Dashboard and 
 
 ## Demo Mode (≈2 min)
 Open **Demo Mode**, press Next through 7 steps (OTP message → identity gap → combined signals → verification step → interrupt → benign message stays Low → incident report). **Reset Demo** clears it.
+
+## Sentinel (v3)
+Open `http://localhost:8000/sentinel`. Trust graph (SVG; pan/zoom/filter/inspect), event stream (polled `GET /api/events`, no SSE), investigation panel separating known facts / inferred risks / missing evidence. Scenarios A, B and C (benign) are **deterministic demo data** and labelled so; the graph is built server-side from the real detector output.
+
+New API: `POST /api/url/assess`, `POST /api/investigations`, `GET /api/investigations/{id}`, `GET /api/events`.
+
+### Browser extension (Manifest V3, `extension/`)
+Load unpacked in Chrome/Edge (`chrome://extensions` → Developer mode → Load unpacked). It uses `webNavigation.onBeforeNavigate`, sends the URL (query stripped) to your local backend, and redirects High/Critical results to a warning page with *Return to safety* and a 30-minute per-host exception. Privacy/settings are in the options page; the backend stores host and verdict only.
+Harmless test destinations (the reserved `.test` TLD never resolves): `http://g00gle-login.test/verify`, `https://paytm.com.evil.test/`. A normal site such as `https://example.org` passes.
+
+### Limitations
+URL checks are heuristics with a small configured brand list and **no threat-intelligence feed**; the extension fails open if the backend is unreachable; the check is asynchronous so a fast page may start loading before the redirect; no OS-level or other-app message inspection; the graph is 2D SVG, not Three.js; no particles/WebSocket; frontend is vanilla JS, not React/TypeScript. The extension and `/sentinel` UI were not exercised in a browser in this environment.
