@@ -1,0 +1,110 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TrustShield</title><style>
+:root{--bg:#0b1220;--card:#151c2c;--bd:#2a3550;--tx:#e6ebf5;--mu:#9aa6bf;--ac:#22d3ee}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,sans-serif}
+header{padding:16px 24px;border-bottom:1px solid var(--bd)}h1{margin:0;font-size:20px}h1 span{color:var(--ac)}
+nav{display:flex;gap:8px;padding:12px 24px;flex-wrap:wrap}nav button{background:none;color:var(--mu);border:1px solid var(--bd);padding:8px 14px;border-radius:8px;cursor:pointer}
+nav button[aria-selected=true]{color:var(--bg);background:var(--ac);border-color:var(--ac)}
+main{max-width:860px;margin:0 auto;padding:0 24px 48px}section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin:12px 0}
+textarea,select,input{width:100%;background:#0e1626;color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
+textarea{min-height:140px}button.p{background:var(--ac);color:#04222a;border:0;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;margin:8px 8px 0 0}
+.lvl{font-size:22px;font-weight:700}.Low{color:#4ade80}.Medium{color:#facc15}.High{color:#fb923c}.Critical{color:#f87171}
+.mu{color:var(--mu);font-size:13px}.err{color:#f87171}blockquote{margin:6px 0;padding-left:10px;border-left:3px solid var(--ac);color:var(--mu)}
+progress{width:100%}label{display:block;margin:8px 0}@media print{nav,header,button{display:none}}
+</style></head><body>
+<header><h1>Trust<span>Shield</span></h1><div class="mu">Verify identity. Analyse behaviour. Interrupt manipulation. — Decision support, not a guarantee of safety.</div></header>
+<nav role="tablist"></nav><main>
+<section id="scan"><div class="card mu">⚠ Avoid pasting real passwords, OTPs or financial details. Messages are analysed in memory and not stored.</div>
+<select id="ex" aria-label="Example"><option value="">Load an example message…</option></select>
+<textarea id="txt" maxlength="5000" aria-label="Message to scan" placeholder="Paste a suspicious message…"></textarea>
+<button class="p" id="go">Scan message</button><span id="st" class="mu"></span><div id="res"></div></section>
+<section id="idc"><div class="card"><label>Claimed relationship<select id="rel"></select></label>
+<progress id="pg" value="0" max="1"></progress><div id="pgt" class="mu"></div><div id="cl"></div>
+<p class="mu">Completing this checklist does <b>not</b> verify identity; it guides you to verify through trusted channels yourself.</p></div></section>
+<section id="rep"><div class="card"><label>Category<select id="cat"><option>Phishing</option><option>Impersonation</option><option>Financial fraud</option><option>Other</option></select></label>
+<label>Impersonated identity/organisation<input id="imp" maxlength="200"></label>
+<p class="mu">Uses the message and latest scan from the Scanner tab.</p><button class="p" id="dl">Download JSON</button><button class="p" id="pr">Print</button>
+<pre id="pv" class="mu" style="white-space:pre-wrap"></pre></div>
+<div class="card"><b>Safe-response guidance</b><ul><li>Secure affected accounts and change passwords from a trusted device.</li><li>Contact the real organisation using details you look up yourself.</li><li>Preserve evidence (screenshots, numbers, timestamps).</li><li>India: report at <a style="color:var(--ac)" href="https://cybercrime.gov.in/" rel="noopener noreferrer" target="_blank">cybercrime.gov.in</a> or call 1930. Independently confirm current official guidance. TrustShield never submits reports for you.</li></ul></div></section>
+<section id="lab"><div class="card"><select id="sc" aria-label="Scenario"></select><div id="tl" class="mu"></div></div>
+<div id="conv"></div><button class="p" id="nx">Next message ▶</button><button class="p" id="rs">Restart</button>
+<div id="lres"></div><div id="acts"></div><div id="afb"></div></section>
+<section id="trust"><div class="card"><b>Trust Graph profile</b> <span class="mu">(contact expectations you define; verification here is SIMULATED)</span>
+<label>Name<input id="tn"></label><label>Role<input id="tr"></label><label>Expected channel<input id="tc" placeholder="e.g. college portal"></label>
+<label>Known verification method<input id="tv"></label><label>Trusted reference<input id="tt"></label>
+<label>Expected request types (comma list from: credential, money, confidential, remote_access, giftcard; empty = none)<input id="te"></label>
+<label>Observed channel<input id="to" placeholder="e.g. SMS from unknown number"></label><label>Incoming message<textarea id="tm" maxlength="5000"></textarea></label>
+<label><input type="checkbox" id="tk" style="width:auto"> Use SIMULATED verification provider (demo token)</label>
+<button class="p" id="tgo">Assess</button><div id="tres"></div></div></section>
+<section id="demo"><div class="card mu">Guided ~2-minute demo using the real engine. Verification shown is SIMULATED and labelled.</div>
+<button class="p" id="dn">Next ▶</button><button class="p" id="dr">Reset Demo</button><div id="dout"></div></section>
+</main><script>
+const $=id=>document.getElementById(id),el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+const tabs=[["lab","Live Attack Lab"],["demo","Demo Mode"],["scan","Message Scanner"],["trust","Trust Graph"],["idc","Identity Check"],["rep","Incident Report"]];let last=null;
+tabs.forEach(([id,l],i)=>{const b=el("button","",l);b.setAttribute("role","tab");b.onclick=()=>show(id);b.dataset.t=id;document.querySelector("nav").append(b)});
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===id));if(id==="rep")preview()}
+const CL={"College or university staff":["Call the department using a number from the official website","Check the request via the official student portal/email domain","Ask a classmate or faculty member you know","Never share OTPs or fees by chat"],
+"Employer or manager":["Call them on a known number","Confirm in your company's official chat/email","Follow the established approval process for payments"],
+"Bank or financial institution":["Hang up and call the number on your card/official site","Navigate to the official website yourself, not via the link","Confirm unexpected account changes in the bank app","Remember banks never ask for OTP/PIN"],
+"Friend or family member":["Call their previously known number","Ask a question only they could answer","Check with a mutual contact","Be wary of 'new number' stories"],
+"Recruiter or job platform":["Find the company's official careers page independently","Confirm the recruiter via the official company domain","Never pay fees for a job offer"],
+"Other":["Contact them via a channel you already trust","Verify any payment instructions through an established process","Don't use unsolicited links"]};
+const rel=$("rel");Object.keys(CL).forEach(k=>rel.append(new Option(k)));
+function draw(){const c=$("cl");c.replaceChildren();const items=CL[rel.value];const st=["Not started","Done","Not possible"];
+items.forEach(t=>{const l=el("label");const s=el("select");st.forEach(x=>s.append(new Option(x)));s.style.width="auto";s.onchange=upd;l.append(s," ",t);c.append(l)});upd()}
+function upd(){const s=[...$("cl").querySelectorAll("select")];const d=s.filter(x=>x.value==="Done").length;$("pg").max=s.length;$("pg").value=d;$("pgt").textContent=d+" of "+s.length+" steps completed (checklist progress only — not identity verification)"}
+rel.onchange=draw;draw();
+fetch("/api/examples").then(r=>r.json()).then(a=>a.forEach(e=>{const o=new Option(e.label,e.text);$("ex").append(o)})).catch(()=>{});
+$("ex").onchange=()=>{if($("ex").value)$("txt").value=$("ex").value};
+$("go").onclick=async()=>{const r=$("res");r.replaceChildren();const t=$("txt").value;if(!t.trim()){r.append(el("p","err","Please paste a message first."));return}
+$("go").disabled=true;$("st").textContent="Scanning…";
+try{const x=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:t})});const d=await x.json();
+if(!x.ok)throw new Error(d.message||"Request failed");last={text:t,res:d};render(d)}catch(e){r.append(el("p","err","Error: "+e.message))}
+$("go").disabled=false;$("st").textContent=""};
+function render(d,r=$("res")){const c=el("div","card");c.append(el("div","lvl "+d.risk_level,"Risk: "+d.risk_level));
+c.append(el("div","mu","Identity status: "+d.identity_status+" — "+d.identity_note));
+c.append(el("div","mu","Evidence coverage: "+d.evidence_coverage+" ("+d.evidence_coverage_note+")"));
+d.reasons.forEach(x=>c.append(el("p","",x)));r.append(c);
+d.indicators.forEach(i=>{const k=el("div","card");k.append(el("b","",i.id.replace("_"," ")+" ("+i.kind+")"),el("p","",i.explanation),el("blockquote","",i.evidence));r.append(k)});
+const a=el("div","card");a.append(el("b","","Recommended next steps"));const u=el("ul");d.recommended_actions.forEach(x=>u.append(el("li","",x)));a.append(u);
+a.append(el("div","mu","Limitations: "+d.limitations.join(" ")));r.append(a)}
+function payload(){return{category:$("cat").value,impersonated:$("imp").value,message:last?last.text:$("txt").value,assessment:last?last.res:{}}}
+function preview(){$("pv").textContent=JSON.stringify(payload(),null,2)}
+["cat","imp"].forEach(i=>$(i).oninput=preview);
+$("pr").onclick=()=>{preview();print()};
+$("dl").onclick=async()=>{try{const r=await fetch("/api/reports/export",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload())});if(!r.ok)throw 0;
+const a=el("a");a.href=URL.createObjectURL(await r.blob());a.download="trustshield-report.json";a.click()}catch(e){alert("Export failed. Check that the message is under 5000 characters.")}};
+
+function ident(d,r){const c=el("div","card"),i=d.identity;c.append(el("b","","Identity trust: "+i.status),el("div","mu",i.note));
+[["Evidence",i.evidence],["Mismatches",i.mismatches],["Missing",i.missing]].forEach(([t,a])=>{if(a.length){c.append(el("div","mu",t+":"));a.forEach(x=>c.append(el("div","","• "+x)))}});
+c.append(el("p","","Next step to establish trust: "+i.next_step),el("p","","Action risk: "+d.action_risk.level+(d.action_risk.requests.length?" ("+d.action_risk.requests.join(", ")+")":"")),el("p","","Safe action: "+d.safe_action));r.append(c)}
+async function post(u,b){const x=await fetch(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});const d=await x.json();if(!x.ok)throw new Error(d.message||"Request failed");return d}
+let SC=[],step=0;const cur=()=>SC.find(s=>s.id===$("sc").value);
+fetch("/api/simulation/scenarios").then(r=>r.json()).then(a=>{SC=a;a.forEach(s=>$("sc").append(new Option(s.title,s.id)));reset()}).catch(()=>{});
+function reset(){step=0;["conv","lres","acts","afb"].forEach(i=>$(i).replaceChildren());$("tl").textContent="Press “Next message” to receive the first message."}
+$("sc").onchange=reset;$("rs").onclick=reset;
+$("nx").onclick=()=>{const s=cur();if(!s||step>=s.messages.length)return;const m=s.messages[step++];const b=el("div","card");b.tabIndex=0;b.style.cursor="pointer";
+const p=el("div");b.append(el("div","mu",m.from+" via "+m.channel+" — click to inspect this message"),el("div","",m.text),p);
+b.onclick=async()=>{p.replaceChildren();try{const d=await post("/api/analyze",{text:m.text});p.append(el("div","mu","This message alone: "+d.risk_level));d.indicators.forEach(i=>p.append(el("blockquote","",i.id+": "+i.evidence)))}catch(e){p.append(el("span","err",e.message))}};
+$("conv").append(b);sim()};
+async function sim(action){try{const d=await post("/api/simulation/run",{scenario_id:cur().id,step,action});
+$("tl").textContent=d.timeline.map(t=>t.stage+" ["+t.detail+"]").join("  →  ");const r=$("lres");r.replaceChildren();render(d.assessment,r);ident(d.assessment,r);
+const a=$("acts");a.replaceChildren();[["verify","Verify Identity"],["pause","Pause Request"],["report","Report Incident"],["continue","Continue Anyway"]].forEach(([k,l])=>{const b=el("button","p",l);b.onclick=()=>sim(k);a.append(b)});
+$("afb").replaceChildren();if(d.action_feedback)$("afb").append(el("div","card",d.action_feedback))}catch(e){$("lres").textContent="Error: "+e.message}}
+$("tgo").onclick=async()=>{const r=$("tres");r.replaceChildren();if(!$("tm").value.trim()){r.append(el("p","err","Enter a message to assess."));return}
+try{const d=await post("/api/identity/assess",{profile:{name:$("tn").value,role:$("tr").value,expected_channel:$("tc").value,verification_method:$("tv").value,trusted_reference:$("tt").value,expected_requests:$("te").value.split(",").map(x=>x.trim()).filter(Boolean)},
+text:$("tm").value,observed_channel:$("to").value,simulated_token:$("tk").checked?"DEMO-VERIFIED":null});render(d,r);ident(d,r)}catch(e){r.append(el("p","err","Error: "+e.message))}};
+
+let dstep=0,DD=null;const WS="Hi, the workshop begins at 4 PM. Please check the official event page for the meeting link.";
+const DSTEPS=[
+["Suspicious message arrives",async r=>{DD=await post("/api/simulation/run",{scenario_id:"college",step:3});DD.text=SC.find(s=>s.id==="college").messages.map(m=>m.text).join(" ");r.append(el("div","card",DD.text))}],
+["Identity gap revealed (separate from behaviour)",async r=>ident(DD.assessment,r)],
+["Urgency + authority pressure + credential request combine",async r=>render(DD.assessment,r)],
+["Independent verification step",async r=>r.append(el("div","card","Verify via: "+DD.assessment.identity.next_step+". "+DD.assessment.safe_action))],
+["You interrupt the request",async r=>{const d=await post("/api/simulation/run",{scenario_id:"college",step:3,action:"pause"});r.append(el("div","card",d.action_feedback))}],
+["A routine message is not auto-flagged",async r=>{const d=await post("/api/analyze",{text:WS});r.append(el("div","card",WS));render(d,r)}],
+["Incident report with evidence",async r=>{last={text:DD.text,res:DD.assessment};r.append(el("p","","Opening the report preview…"));show("rep")}]];
+$("dn").onclick=async()=>{if(dstep>=DSTEPS.length||(dstep>0&&!DD))return;const [t,f]=DSTEPS[dstep++],o=$("dout");o.append(el("h3","",dstep+". "+t));try{await f(o)}catch(e){o.append(el("p","err",e.message))}};
+$("dr").onclick=()=>{dstep=0;DD=null;$("dout").replaceChildren()};
+show("lab");</script></body></html>
