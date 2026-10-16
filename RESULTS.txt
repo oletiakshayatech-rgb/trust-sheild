@@ -1,4 +1,1 @@
-flagged = High or Critical: n=28 (mal=14, benign=14) TP=11 FP=1 FN=3 TN=13 precision=0.92 recall=0.79 FPR=0.07
-flagged = Medium or above: n=28 (mal=14, benign=14) TP=13 FP=6 FN=1 TN=8 precision=0.68 recall=0.93 FPR=0.43
-Missed malicious (High+): ['Install AnyDesk now so our officer can fix your ac', 'Kindly furnish the six digits that just arrived on', 'Congrats! You won a prize. Send bitcoin fee to cla']
-False positives (High+): ['URGENT: Please reset your password using the offic']
+
